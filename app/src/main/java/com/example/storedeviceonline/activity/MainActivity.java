@@ -3,6 +3,7 @@ package com.example.storedeviceonline.activity;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -71,12 +72,14 @@ public class MainActivity extends AppCompatActivity {
         ActionViewFlipper();
 
         //
-        getDataLoaiSP();
+//        getDataLoaiSP();
+
         listViewHome.setAdapter(loaispAdapter);
 
         //
         getDataSPLatest();
-//        recyclerViewHome.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewHome.setLayoutManager(new GridLayoutManager(this,2));
+        recyclerViewHome.setAdapter(sanPhamAdapter);
     }
 
     private void getDataLoaiSP()
@@ -113,9 +116,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this,error.toString(),Toast.LENGTH_SHORT).show();
                     }
                 }
-                // home : https://icons.iconarchive.com/icons/roundicons/100-free-solid/256/home-icon.png
-                // contact : https://www.pngitem.com/pimgs/m/156-1568222_red-png-contact-icon-png-download-phone-red.png
-                // info : https://www.pngitem.com/pimgs/m/463-4637103_icon-info-transparent-svg-new-icon-hd-png.png
         );
 
         requestQueue.add(jsonArrayRequest);
@@ -129,23 +129,23 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONArray response) {
 
-//                        for ( int i = 0; i < response.length() ; i++){
-//                            try {
-//                                JSONObject obj = response.getJSONObject(i);
-//                                mangSP.add(new SanPham(
-//                                        obj.getInt("id"),
-//                                        obj.getString("product_name"),
-//                                        obj.getInt("product_price"),
-//                                        obj.getString("product_image"),
-//                                        obj.getString("product_descript"),
-//                                        obj.getInt("category_id")
-//                                ) );
-//                            } catch (JSONException e) {
-//                                e.printStackTrace();
-//                            }
-//                            sanPhamAdapter.notifyDataSetChanged();
-//                        }
-                        Toast.makeText(MainActivity.this,response.toString(), Toast.LENGTH_SHORT).show();
+                        for ( int i = 0; i < response.length() ; i++){
+                            try {
+                                JSONObject obj = response.getJSONObject(i);
+                                mangSP.add(new SanPham(
+                                        obj.getInt("id"),
+                                        obj.getString("product_name"),
+                                        obj.getInt("product_price"),
+                                        obj.getString("product_image"),
+                                        obj.getString("product_descript"),
+                                        obj.getInt("category_id")
+                                ) );
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            sanPhamAdapter.notifyDataSetChanged();
+                        }
+
                     }
                 },
                 new Response.ErrorListener() {
@@ -208,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
 
         mangLoaiSP = new ArrayList<>();
         mangLoaiSP.add(0,new LoaiSP(0,"Trang chính","https://icons.iconarchive.com/icons/roundicons/100-free-solid/256/home-icon.png"));
-
         loaispAdapter = new LoaispAdapter(mangLoaiSP,this);
 
         mangSP = new ArrayList<>();
