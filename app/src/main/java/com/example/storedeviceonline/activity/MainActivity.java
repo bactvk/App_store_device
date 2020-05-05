@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 //import android.widget.Toolbar;
@@ -72,14 +74,53 @@ public class MainActivity extends AppCompatActivity {
         ActionViewFlipper();
 
         //
-//        getDataLoaiSP();
-
-        listViewHome.setAdapter(loaispAdapter);
+        getDataLoaiSP();
 
         //
         getDataSPLatest();
-        recyclerViewHome.setLayoutManager(new GridLayoutManager(this,2));
-        recyclerViewHome.setAdapter(sanPhamAdapter);
+        //
+        CatchOnItemListView(); // 
+
+    }
+
+    private void CatchOnItemListView() {
+        listViewHome.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch(position){
+                    case 0:
+                        Intent intent = new Intent(MainActivity.this,MainActivity.class);
+                        startActivity(intent);
+                        drawerLayout.closeDrawers();
+                        break;
+
+                    case 1:
+                        Intent intent_phone = new Intent(MainActivity.this,PhoneActivity.class);
+                        intent_phone.putExtra("idLoaiSP",mangLoaiSP.get(position).getId());
+                        startActivity(intent_phone);
+                        drawerLayout.closeDrawers();
+                        break;
+
+                    case 2:
+                        Intent intent_laptop = new Intent(MainActivity.this,LaptopActivity.class);
+                        intent_laptop.putExtra("idLoaiSP",mangLoaiSP.get(position).getId());
+                        startActivity(intent_laptop);
+                        drawerLayout.closeDrawers();
+                        break;
+
+                    case 3:
+                        Intent intent_contact = new Intent(MainActivity.this,ContactActivity.class);
+                        startActivity(intent_contact);
+                        drawerLayout.closeDrawers();
+                        break;
+                    case 4:
+                        Intent intent_info = new Intent(MainActivity.this,InfoActivity.class);
+                        startActivity(intent_info);
+                        drawerLayout.closeDrawers();
+                        break;
+                }
+            }
+        });
     }
 
     private void getDataLoaiSP()
@@ -96,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
                                     JSONObject obj = response.getJSONObject(i);
                                     mangLoaiSP.add(new LoaiSP(
                                             obj.getInt("id"),
-                                            obj.getString("nameCategory"),
-                                            obj.getString("imageCategory")
+                                            obj.getString("category_name"),
+                                            obj.getString("category_image")
                                     ) );
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -209,10 +250,12 @@ public class MainActivity extends AppCompatActivity {
         mangLoaiSP = new ArrayList<>();
         mangLoaiSP.add(0,new LoaiSP(0,"Trang chính","https://icons.iconarchive.com/icons/roundicons/100-free-solid/256/home-icon.png"));
         loaispAdapter = new LoaispAdapter(mangLoaiSP,this);
+        listViewHome.setAdapter(loaispAdapter);
 
         mangSP = new ArrayList<>();
         sanPhamAdapter = new SanPhamAdapter(this,mangSP);
-
+        recyclerViewHome.setLayoutManager(new GridLayoutManager(this,2));
+        recyclerViewHome.setAdapter(sanPhamAdapter);
 
     }
 }
