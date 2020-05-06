@@ -1,11 +1,18 @@
 package com.example.storedeviceonline.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.ListView;
+import android.widget.Toast;
+
 import androidx.appcompat.widget.Toolbar;
 
 import com.android.volley.AuthFailureError;
@@ -36,7 +43,10 @@ public class PhoneActivity extends AppCompatActivity {
     ArrayList<SanPham> sanPhamArrayList;
 
     int idDT = 0 , page = 1 ;
-
+    View footerview;
+    boolean isLoading = false;
+    boolean limitData = false;
+    mHander mHander;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,16 +56,38 @@ public class PhoneActivity extends AppCompatActivity {
         GetIDLoaiSP();
         ActionToolBar(); // back
         GetData(page);
+        LoadMoreData();
+    }
+
+    private void LoadMoreData() {
+        lvPhone.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if(firstVisibleItem + visibleItemCount == totalItemCount && totalItemCount != 0 && isLoading == false && limitData == false){
+                    isLoading = true;
+                    ThreadData threadData = new ThreadData();
+                    threadData.start();
+                }
+            }
+        });
     }
 
     private void GetData(int Page) {
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
         String urlPhone = Server.UrlPhone+String.valueOf(Page);
+        Log.d("urlPHONE: ",urlPhone);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, urlPhone,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        if(response != null){
+
+                        if(response != null && response.length()> 0){
+                            lvPhone.removeFooterView(footerview);
                             try {
                                 JSONArray jsonArray = new JSONArray(response);
                                 for(int i = 0 ; i < jsonArray.length() ; i++){
@@ -74,6 +106,11 @@ public class PhoneActivity extends AppCompatActivity {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
+                        }else{
+                            limitData = true;
+                            lvPhone.removeFooterView(footerview);
+                            Toast.makeText(getApplicationContext(),"Het data",Toast.LENGTH_SHORT).show();
+
                         }
                     }
                 },
@@ -119,5 +156,40 @@ public class PhoneActivity extends AppCompatActivity {
 
         lvPhone.setAdapter(phoneAdapter);
 
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        footerview = inflater.inflate(R.layout.progressbar,null);
+        mHander = new mHander();
+
     }
+
+    public class mHander extends Handler{
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            switch (msg.what){
+                case 0:
+                    lvPhone.addFooterView(footerview);
+                    break;
+                case 1:
+                    GetData(++page);
+                    isLoading = true;
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    }
+    public class ThreadData extends Thread{
+        @Override
+        public void run() {
+            mHander.sendEmptyMessage(0);
+            try {
+                Thread.sleep(4000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Message message = mHander.obtainMessage(1); // lien ket thread with handler
+            mHander.sendMessage(message);
+            super.run();
+        }
+    }
+
 }
